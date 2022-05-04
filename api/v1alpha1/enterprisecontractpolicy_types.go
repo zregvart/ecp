@@ -23,32 +23,17 @@ import (
 // Important: Run "make" to regenerate code after modifying this file
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
-type EnterpriseContractVersionName string
-
 // EnterpriseContractPolicySpec represents the desired state of EnterpriseContractPolicy
 type EnterpriseContractPolicySpec struct {
 	// Description text describing the the policy or it's intended use
 	// +optional
 	Description *string `json:"description"`
-	// Revisions of the policy, there needs to be at least one
-	// +kubebuilder:validation:MinProperties:=1
-	Revisions map[EnterpriseContractVersionName]EnterpriseContractPolicyRevision `json:"revisions"`
-}
-
-// EnterpriseContractPolicyRevision represents version of an enterprise contract
-type EnterpriseContractPolicyRevision struct {
-	// EffectiveFrom represents the time when the policy comes into effect, if empty immediately
-	// +kubebuilder:validation:Format:=date-time
-	// +optional
-	EffectiveFrom *metav1.Time `json:"effectiveFrom"`
-	// Additive is true if this revision is additive to up to the last non-additive or first revision, false if it's non-additive and older revisions are not taken into consideration. This allows for changes to be incremental and removes duplication. `false` by default
-	// +kubebuilder:default:=false
-	Additive bool `json:"additive,omitempty"`
 	// Sources is list of policy sources
 	// +kubebuilder:validation:MinItems:=1
 	Sources []PolicySource `json:"sources"`
 	// Exceptions configures exceptions under which the policy is evaluated as successful even if the listed policy checks have reported failure
-	Exceptions EnterpriseContractPolicyExceptions `json:"exceptions,omitempty"`
+	// +optional
+	Exceptions *EnterpriseContractPolicyExceptions `json:"exceptions,omitempty"`
 }
 
 // PolicySource represents the configuration of the source for the policy
@@ -70,18 +55,22 @@ type GitPolicySource struct {
 // EnterpriseContractPolicyExceptions configuration of exceptions for the policy evaluation
 type EnterpriseContractPolicyExceptions struct {
 	// +optional
+	// +listType:=set
 	NonBlocking []string `json:"nonBlocking,omitempty"`
 }
 
 // EnterpriseContractPolicyStatus defines the observed state of EnterpriseContractPolicy
 type EnterpriseContractPolicyStatus struct {
-	// EffectiveVersion the currently effective version
-	EffectiveVersion EnterpriseContractVersionName `json:"effectiveVersion"`
+	// TODO what to add here?
+	// ideas;
+	// - on what the policy was applied
+	// - history of changes
 }
 
 // +kubebuilder:object:root=true
+// +kubebuilder:resource:categories=all
+// +kubebuilder:resource:shortName=ecp
 // +kubebuilder:subresource:status
-// +kubebuilder:printcolumn:name="Effective version",type=string,JSONPath=`.spec.effectiveVersion`
 // EnterpriseContractPolicy is the Schema for the enterprisecontractpolicies API
 type EnterpriseContractPolicy struct {
 	metav1.TypeMeta   `json:",inline"`

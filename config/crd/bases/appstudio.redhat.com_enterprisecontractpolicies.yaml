@@ -12,14 +12,12 @@ spec:
     kind: EnterpriseContractPolicy
     listKind: EnterpriseContractPolicyList
     plural: enterprisecontractpolicies
+    shortNames:
+    - ecp
     singular: enterprisecontractpolicy
   scope: Namespaced
   versions:
-  - additionalPrinterColumns:
-    - jsonPath: .spec.effectiveVersion
-      name: Effective version
-      type: string
-    name: v1alpha1
+  - name: v1alpha1
     schema:
       openAPIV3Schema:
         description: EnterpriseContractPolicy is the Schema for the enterprisecontractpolicies
@@ -45,76 +43,47 @@ spec:
                 description: Description text describing the the policy or it's intended
                   use
                 type: string
-              revisions:
-                additionalProperties:
-                  description: EnterpriseContractPolicyRevision represents version
-                    of an enterprise contract
-                  properties:
-                    additive:
-                      default: false
-                      description: Additive is true if this revision is additive to
-                        up to the last non-additive or first revision, false if it's
-                        non-additive and older revisions are not taken into consideration.
-                        This allows for changes to be incremental and removes duplication.
-                        `false` by default
-                      type: boolean
-                    effectiveFrom:
-                      description: EffectiveFrom represents the time when the policy
-                        comes into effect, if empty immediately
-                      format: date-time
+              exceptions:
+                description: Exceptions configures exceptions under which the policy
+                  is evaluated as successful even if the listed policy checks have
+                  reported failure
+                properties:
+                  nonBlocking:
+                    items:
                       type: string
-                    exceptions:
-                      description: Exceptions configures exceptions under which the
-                        policy is evaluated as successful even if the listed policy
-                        checks have reported failure
-                      properties:
-                        nonBlocking:
-                          items:
-                            type: string
-                          type: array
-                      type: object
-                    sources:
-                      description: Sources is list of policy sources
-                      items:
-                        description: PolicySource represents the configuration of
-                          the source for the policy
-                        properties:
-                          git:
-                            description: GitRepository configures fetching of the
-                              policies from a Git repository
-                            properties:
-                              repository:
-                                description: Repository URL
-                                type: string
-                              revision:
-                                default: main
-                                description: Revision matching the branch, commit
-                                  id or similar to fetch. Defaults to `main`
-                                type: string
-                            required:
-                            - repository
-                            type: object
-                        type: object
-                      minItems: 1
-                      type: array
-                  required:
-                  - sources
-                  type: object
-                description: Revisions of the policy, there needs to be at least one
-                minProperties: 1
+                    type: array
+                    x-kubernetes-list-type: set
                 type: object
+              sources:
+                description: Sources is list of policy sources
+                items:
+                  description: PolicySource represents the configuration of the source
+                    for the policy
+                  properties:
+                    git:
+                      description: GitRepository configures fetching of the policies
+                        from a Git repository
+                      properties:
+                        repository:
+                          description: Repository URL
+                          type: string
+                        revision:
+                          default: main
+                          description: Revision matching the branch, commit id or
+                            similar to fetch. Defaults to `main`
+                          type: string
+                      required:
+                      - repository
+                      type: object
+                  type: object
+                minItems: 1
+                type: array
             required:
-            - revisions
+            - sources
             type: object
           status:
             description: EnterpriseContractPolicyStatus defines the observed state
               of EnterpriseContractPolicy
-            properties:
-              effectiveVersion:
-                description: EffectiveVersion the currently effective version
-                type: string
-            required:
-            - effectiveVersion
             type: object
         type: object
     served: true
